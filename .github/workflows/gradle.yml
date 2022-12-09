@@ -5,8 +5,9 @@ on:
     tags:
       - 'v*.*.*'
 
-permissions:
-  contents: read
+# Need to Consider about permission
+# permissions:
+#   contents: read
 
 jobs:
   CI-CD:
@@ -15,11 +16,12 @@ jobs:
 
     steps:
     
+    - uses: actions/checkout@v3
     ## env setting
-    - uses: actions/checkout@v2
-    - name: Set env
-      run: 
-        echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+#     - name: Set env
+#       run: |
+#         echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV"
+#         echo "GITHUB_ENV VALUE IS $GITHUB_ENV"
         
     ## jdk setting
     - uses: actions/checkout@v3
@@ -44,19 +46,36 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build -x test
       
-    ## docker build & push to develop
-    - name: Docker build & push to dev
-      if: contains(github.ref, 'dev')
+    ## docker tasks
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      
+    - name: Login to Docker Registry
+      uses: docker/login-action@v2
+      with: 
+        registry: ${{ secrets.HOST_DEV }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+      
+    - name: Build and push
+#       if: contains(github.ref, 'dev')
       run: |
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} {{ secrets.HOST_DEV }} 
-        docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/mozi-server:dev
-        docker push ${{ secrets.DOCKER_REPO }}/mozi-server:dev
-        
+        docker build -t ${{ secrets.HOST_DEV }}/mozi-server:dev .
+        docker push ${{ secrets.HOST_DEV }}/mozi-server:dev
+  
   ## time
   current-time:
+  
     needs: CI-CD
+    
     runs-on: ubuntu-latest
+    
     steps:
+    
+      # Need to Verify the action
       - name: Get Current Time
         uses: 1466587594/get-current-time@v2
         id: current-time
