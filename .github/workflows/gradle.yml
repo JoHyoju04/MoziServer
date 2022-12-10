@@ -70,8 +70,8 @@ jobs:
       uses: appleboy/ssh-action@v0.1.6
       with:
         host: ${{ secrets.HOST_PROD }}
-        username: ${{ secrets.USERNAME_HOST }}
-        key: ${{ secrets.KEY_HOST }}
+        username: ${{ secrets.USERNAME_PROD }}
+        key: ${{ secrets.KEY_PROD }}
         script: sudo ./server-deploy.sh
   
   ## time
