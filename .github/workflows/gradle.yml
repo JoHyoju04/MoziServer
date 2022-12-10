@@ -61,10 +61,18 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
       
     - name: Build and push
-#       if: contains(github.ref, 'dev')
+#       if: contains(github.ref, 'main')
       run: |
-        docker build -t ${{ secrets.HOST_DEV }}/mozi-server:dev .
-        docker push ${{ secrets.HOST_DEV }}/mozi-server:dev
+        docker build -t ${{ secrets.HOST_DEV }}/mozi-server:prod .
+        docker push ${{ secrets.HOST_DEV }}/mozi-server:prod
+    
+    - name: Executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.PROD }}
+        username: ${{ secrets.USERNAME_HOST }}
+        key: ${{ secrets.KEY_HOST }}
+        script: sudo ./server-deploy.sh
   
   ## time
   current-time:
